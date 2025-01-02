@@ -28,14 +28,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import org.d3ifcool.smarthydro.R
+import org.d3ifcool.smarthydro.navigation.Screen
 
 @Composable
 fun HomeScreen(
-//    modifier: Modifier = Modifier,
-//    navHostController: NavHostController,
+    modifier: Modifier = Modifier,
+    navHostController: NavHostController,
 ) {
     Scaffold (
-        topBar = { AppBarHome(label = stringResource(R.string.home)) }
+        topBar = { AppBarHome(
+            label = stringResource(R.string.home),
+            navHostController = navHostController
+        ) }
     ) { paddingValues ->
         HomeScreenContent(modifier = Modifier.padding(paddingValues).fillMaxSize())
     }
@@ -63,7 +67,6 @@ fun HomeTabBar(modifier: Modifier = Modifier) {
                     onClick = { selectedTabIndex = index },
                     text = { Text(title) },
                     selectedContentColor = colorResource(R.color.tosca),
-                    unselectedContentColor = Color.Black,
                 )
             }
         }
@@ -88,11 +91,17 @@ fun MonitoringContent() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBarHome(label: String) {
+fun AppBarHome(
+    label: String,
+    navHostController: NavHostController,
+) {
     TopAppBar(
         title = { Text(text = label) },
         actions = {
-            IconButton(onClick = {  }) {
+            IconButton(onClick = {
+                navHostController.navigate(Screen.Profile.route)
+
+            }) {
                 Icon(
                     painter = painterResource(R.drawable.ic_profile),
                     contentDescription = "Profile",
@@ -107,5 +116,5 @@ fun AppBarHome(label: String) {
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(navHostController = rememberNavController())
 }

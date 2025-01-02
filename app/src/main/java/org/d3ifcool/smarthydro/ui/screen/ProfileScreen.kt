@@ -20,15 +20,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import org.d3ifcool.smarthydro.R
+import org.d3ifcool.smarthydro.navigation.Screen
 import org.d3ifcool.smarthydro.ui.theme.SmartHydroTheme
 
 @Composable
-fun ProfileScreen() {
-    Scaffold (
-        topBar = { AppBarProfile(label = stringResource(R.string.profile)) }
+fun ProfileScreen(
+    navHostController: NavHostController,
+) {
+    Scaffold(
+        topBar = {
+            AppBarProfile(
+                label = stringResource(R.string.profile),
+                navHostController = navHostController
+            )
+        }
     ) { paddingValues ->
         ProfileScreenContent(modifier = Modifier.padding(paddingValues))
     }
@@ -36,17 +47,16 @@ fun ProfileScreen() {
 
 @Composable
 fun ProfileScreenContent(modifier: Modifier = Modifier) {
-    Column (
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(top = 120.dp)
-        ,
+            .padding(top = 120.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row (
+        Row(
             horizontalArrangement = Arrangement.Center,
 
-        ) {
+            ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_logo_telkom),
                 contentDescription = "Logo Telkom University",
@@ -64,36 +74,37 @@ fun ProfileScreenContent(modifier: Modifier = Modifier) {
             text = stringResource(R.string.alamat_telkom),
             modifier = Modifier.padding(32.dp)
         )
+        Text(
+            text = stringResource(R.string.alamat_desa),
+            modifier = Modifier.padding(32.dp)
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBarProfile(label: String) {
+fun AppBarProfile(navHostController: NavHostController, label: String) {
     TopAppBar(
-        title = { Text(text = label) },
+        title = {
+            Text(
+                text = label,
+                fontWeight = FontWeight.W500
+            )
+        },
         navigationIcon = {
-            IconButton(onClick = {  }) {
+            IconButton(onClick = { navHostController.popBackStack() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
         },
-        actions = {
-            IconButton(onClick = {  }) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_profile),
-                    contentDescription = "Profile",
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
 
-    )
+
+        )
 }
 
 @Preview
 @Composable
 fun ProfileScreenPreview() {
     SmartHydroTheme {
-        ProfileScreen()
+        ProfileScreen(rememberNavController())
     }
 }

@@ -35,23 +35,33 @@ import org.d3ifcool.smarthydro.ui.AppBarLoginRegister
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import org.d3ifcool.smarthydro.R
+import org.d3ifcool.smarthydro.navigation.Screen
 import org.d3ifcool.smarthydro.ui.theme.SmartHydroTheme
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    navHostController: NavHostController,
+    ) {
     Scaffold { innerPadding ->
 
         LoginScreenContent(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            navHostController = navHostController
         )
     }
 }
 
 @Composable
-fun LoginScreenContent(modifier: Modifier = Modifier) {
+fun LoginScreenContent(
+    modifier: Modifier = Modifier,
+    navHostController: NavHostController,
+    ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
@@ -63,13 +73,23 @@ fun LoginScreenContent(modifier: Modifier = Modifier) {
         Row(
             modifier = Modifier.padding(bottom = 24.dp)
         ) {
-            Text(
-                modifier = Modifier.padding(top = 32.dp),
-                text = stringResource(R.string.selamat_datang_di_smarthydro),
-                fontWeight = FontWeight.Bold,
-                color = colorResource(R.color.army),
-                fontSize = 24.sp
-            )
+            Column {
+                Text(
+                    modifier = Modifier.padding(top = 48.dp),
+                    text = stringResource(R.string.selamat_datang_di_smarthydro),
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(R.color.army),
+                    fontSize = 24.sp
+                )
+                Text(
+                    modifier = Modifier.padding(top = 1.dp),
+                    text = stringResource(R.string.desa_cibiru_wetan),
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(R.color.army),
+                    fontSize = 24.sp
+                )
+            }
+
             Image(
                 painter = painterResource(R.drawable.ic_logo_aplikasi),
                 contentDescription = "Logo Aplikasi",
@@ -135,7 +155,9 @@ fun LoginScreenContent(modifier: Modifier = Modifier) {
 
         // Login Button
         Button(
-            onClick = { /* Handle login */ },
+            onClick = { 
+                navHostController.navigate(Screen.Home.route)
+            },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.tosca))
@@ -156,7 +178,9 @@ fun LoginScreenContent(modifier: Modifier = Modifier) {
             Text(
                 text = "Register",
                 color = colorResource(R.color.tosca),
-                modifier = Modifier.clickable { /* Handle register */ },
+                modifier = Modifier.clickable {
+                    navHostController.navigate(Screen.Register.route)
+                },
                 fontWeight = FontWeight.W500
             )
         }
@@ -168,6 +192,6 @@ fun LoginScreenContent(modifier: Modifier = Modifier) {
 @Composable
 fun LoginScreenPreview() {
     SmartHydroTheme {
-        LoginScreen(Modifier)
+        LoginScreen(navHostController = rememberNavController())
     }
 }
