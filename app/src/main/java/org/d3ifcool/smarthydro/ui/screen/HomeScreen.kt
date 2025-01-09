@@ -1,10 +1,15 @@
 package org.d3ifcool.smarthydro.ui.screen
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,23 +32,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.d3ifcool.smarthydro.R
 import org.d3ifcool.smarthydro.navigation.Screen
+
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    navHostController: NavHostController,
+    navHostController: NavHostController
 ) {
-    Scaffold (
-        topBar = { AppBarHome(
-            label = stringResource(R.string.home),
-            navHostController = navHostController
-        ) }
+    val context = LocalContext.current // Dapatkan context lokal
+
+    Scaffold(
+        topBar = {
+            AppBarHome(
+                label = stringResource(R.string.home),
+                navHostController = navHostController,
+                context = context // Berikan context ke AppBarHome
+            )
+        }
     ) { paddingValues ->
-        HomeScreenContent(modifier = Modifier.padding(paddingValues).fillMaxSize())
+        HomeScreenContent(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        )
     }
 }
+
+
 
 @Composable
 fun HomeScreenContent(modifier: Modifier = Modifier) {
@@ -94,27 +115,49 @@ fun MonitoringContent() {
 fun AppBarHome(
     label: String,
     navHostController: NavHostController,
+    context: Context, // Tambahkan parameter context
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     TopAppBar(
         title = { Text(text = label) },
         actions = {
-            IconButton(onClick = {
-                navHostController.navigate(Screen.Profile.route)
-
-            }) {
+            IconButton(onClick = { expanded = true }) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_profile),
+                    imageVector = Icons.Filled.MoreVert,
                     contentDescription = "Profile",
                     modifier = Modifier.size(32.dp)
                 )
             }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    onClick = {
+                        navHostController.navigate(Screen.Profile.route)
+                        expanded = false
+                    },
+                    text = {
+                        Text("Profile")
+                    }
+                )
+
+                DropdownMenuItem(
+                    onClick = {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            UserPreferences.setLoginStatus(context, false) // Ubah status login
+                        }
+                        navHostController.navigate(Screen.Login.route) { // Arahkan ke layar Login
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                        expanded = false
+                    },
+                    text = {
+                        Text("Logout")
+                    }
+                )
+            }
         }
-
     )
-}
-
-@Preview
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen(navHostController = rememberNavController())
 }

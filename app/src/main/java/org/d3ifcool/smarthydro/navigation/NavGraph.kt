@@ -1,6 +1,9 @@
 package org.d3ifcool.smarthydro.navigation
 
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -8,27 +11,25 @@ import org.d3ifcool.smarthydro.ui.screen.HomeScreen
 import org.d3ifcool.smarthydro.ui.screen.LoginScreen
 import org.d3ifcool.smarthydro.ui.screen.ProfileScreen
 import org.d3ifcool.smarthydro.ui.screen.RegisterScreen
+import org.d3ifcool.smarthydro.ui.screen.UserPreferences
 
 @Composable
-fun SetUpNavGraph(navHostController: NavHostController) {
+fun SetupNavGraph(navHostController: NavHostController, context: Context) {
+    val isLoggedIn = UserPreferences.getLoginStatus(context).collectAsState(initial = false)
+
     NavHost(
         navController = navHostController,
-        startDestination = Screen.Login.route
+        startDestination = if (isLoggedIn.value) Screen.Home.route else Screen.Login.route
     ) {
-        composable(route = Screen.Home.route) {
+        composable(Screen.Login.route) {
+            LoginScreen(navHostController = navHostController, context = context)
+        }
+        composable(Screen.Home.route) {
             HomeScreen(navHostController = navHostController)
         }
-
-        composable(route = Screen.Login.route) {
-            LoginScreen(navHostController = navHostController)
-        }
-
-        composable(route = Screen.Register.route) {
-            RegisterScreen(navHostController = navHostController)
-        }
-
-        composable(route = Screen.Profile.route) {
+        composable(Screen.Profile.route) {
             ProfileScreen(navHostController = navHostController)
         }
     }
 }
+

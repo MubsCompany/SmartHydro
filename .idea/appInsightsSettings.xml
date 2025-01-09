@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="org.d3ifcool.smarthydro" />
+                  <option name="mobileSdkAppId" value="1:301492329081:android:54c6d03dc2e44d86e852a8" />
+                  <option name="projectId" value="smarthydro-131ef" />
+                  <option name="projectNumber" value="301492329081" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

@@ -12,18 +12,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-import org.d3ifcool.smarthydro.navigation.SetUpNavGraph
+import org.d3ifcool.smarthydro.navigation.SetupNavGraph
+import org.d3ifcool.smarthydro.ui.screen.AppEntry
 import org.d3ifcool.smarthydro.ui.theme.SmartHydroTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
             SmartHydroTheme {
-                SetUpNavGraph(navHostController = rememberNavController())
-                }
+                SetupNavGraph(navHostController = navController, context = this)
             }
         }
     }
+}
+
 

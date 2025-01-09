@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -29,6 +30,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,12 +42,15 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import org.d3ifcool.smarthydro.ui.AppBarLoginRegister
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import org.d3ifcool.smarthydro.R
 import org.d3ifcool.smarthydro.navigation.Screen
 import org.d3ifcool.smarthydro.ui.theme.SmartHydroTheme
@@ -68,6 +76,13 @@ fun RegisterScreenContent(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
 ) {
+    var username by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
@@ -75,32 +90,6 @@ fun RegisterScreenContent(
     ) {
 
         AppBarLoginRegister()
-
-        Row(
-            modifier = Modifier.padding(bottom = 24.dp)
-        ) {
-            Column {
-                Text(
-                    modifier = Modifier.padding(top = 48.dp),
-                    text = stringResource(R.string.selamat_datang_di_smarthydro),
-                    fontWeight = FontWeight.Bold,
-                    color = colorResource(R.color.army),
-                    fontSize = 24.sp
-                )
-                Text(
-                    modifier = Modifier.padding(top = 1.dp),
-                    text = stringResource(R.string.desa_cibiru_wetan),
-                    fontWeight = FontWeight.Bold,
-                    color = colorResource(R.color.army),
-                    fontSize = 24.sp
-                )
-            }
-            Image(
-                painter = painterResource(R.drawable.ic_logo_aplikasi),
-                contentDescription = "Logo Aplikasi",
-                modifier = Modifier.size(200.dp)
-            )
-        }
 
         Text(
             text = "Register",
@@ -111,32 +100,85 @@ fun RegisterScreenContent(
                 .padding(start = 8.dp)
         )
 
-        TextFieldWithIcon(
-            label = "Nama",
-            icon = Icons.Default.Person
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Nama") },
+            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
-        TextFieldWithIcon(
-            label = "No.HP",
-            icon = Icons.Default.Phone
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        TextFieldWithIcon(
-            label = "Email",
-            icon = Icons.Default.Email
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        TextFieldWithIcon(
-            label = "Password",
-            icon = Icons.Default.Lock
-        )
 
+        OutlinedTextField(
+            value = phone,
+            onValueChange = { phone = it },
+            label = { Text("No.HP") },
+            leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation(),
+        )
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Register Button
+        if (isLoading) {
+            CircularProgressIndicator()
+        }
+
+        if (errorMessage.isNotEmpty()) {
+            Text(text = errorMessage, color = Color.Red, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         Button(
             onClick = {
-                navHostController.navigate(Screen.Home.route)
+                if (username.isBlank() || phone.isBlank() || email.isBlank() || password.isBlank()) {
+                    errorMessage = "Semua bidang harus diisi!"
+                    return@Button
+                }
+                isLoading = true
+                FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        isLoading = false
+                        if (task.isSuccessful) {
+                            val user = FirebaseAuth.getInstance().currentUser
+                            val userId = user?.uid
+                            val userData = mapOf(
+                                "username" to username,
+                                "phone" to phone,
+                                "email" to email
+                            )
+
+                            FirebaseFirestore.getInstance()
+                                .collection("users")
+                                .document(userId ?: "")
+                                .set(userData)
+                                .addOnSuccessListener {
+                                    navHostController.navigate(Screen.Home.route)
+                                }
+                                .addOnFailureListener { e ->
+                                    errorMessage = "Gagal menyimpan data pengguna: ${e.localizedMessage}"
+                                }
+                        } else {
+                            errorMessage = "Gagal registrasi: ${task.exception?.localizedMessage}"
+                        }
+                    }
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
@@ -147,13 +189,8 @@ fun RegisterScreenContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Register Link
         Row {
-
-            Text(
-                text = "Sudah punya akun? ",
-                color = Color.Gray,
-            )
+            Text(text = "Sudah punya akun? ", color = Color.Gray)
             Text(
                 text = "Login",
                 color = colorResource(R.color.tosca),
@@ -161,9 +198,9 @@ fun RegisterScreenContent(
                 fontWeight = FontWeight.W500
             )
         }
-
     }
 }
+
 
 @Composable
 fun TextFieldWithIcon(label: String, icon: ImageVector) {
